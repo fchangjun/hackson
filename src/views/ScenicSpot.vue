@@ -2,7 +2,10 @@
     <div class="scenic-spot">
         <div class="scenic-spot_bg">
             <WebCamUI v-if="false" ref="webcam" :fullscreenState="false"  @photoTaken="photoTaken" />
-            <input type="file" @change="onFileChange">
+            <input style="display: none;" ref="inputFile" type="file" @change="onFileChange">
+            <div class="camera" @click="onCameraClick">
+                <img src="@/assets/拍照icon.png" alt="" srcset="">
+            </div>
         </div>
         <div class="scenic-spot_chat-container">
             <div class="scenic-spot_chat-user">
@@ -17,6 +20,7 @@
     </div>
 </template>
 <script>
+import cache from '@/util/cache';
 import axios from 'axios';
 import { WebCamUI } from 'vue-camera-lib';
 
@@ -34,8 +38,8 @@ export default {
     components: { WebCamUI },
     data() {
         return {
-            imageDesc: '请耐心等待，我正在帮你快速扫描中……',
-            loading: true
+            imageDesc: '有什么需要帮忙的吗？',
+            loading: false
         }
     },
     methods: {
@@ -43,26 +47,53 @@ export default {
             console.log('image blob: ', data.blob)
             console.log('image data url', data.image_data_url)
         },
+        onCameraClick() {
+            this.$refs.inputFile.click();
+        },
         async onFileChange(e) {
-            const file = e.target.files[0];
+            if(this.loading) {
+                return;
+            }
+            this.loading = true;
+            this.imageDesc = '正在识别，请稍等...';
+            const file = e.target?.files[0];
+            if(!file) {
+                return;
+            }
+            this.analysisFile(file);
+        },
+
+        async analysisFile(file) {
             let base64String = await file2Base64(file);
             if (base64String.indexOf('base64,') > -1) {
                 base64String = base64String.split(',')[1];
             }
-            const data = await axios.post("/image_to_text", {
-                prompt: "你是一个文物鉴赏家，用中文详细描述这幅图像包含的文物？",
-                image: base64String
-            });
+            try {
+                const data = await axios.post("/image_to_text", {
+                    prompt: "你是一个文物鉴赏家，详细描述这幅图像包含的文物？",
+                    image: base64String
+                });
 
-            const desc = await axios.get('/api/v1/trans/text', {
-                params: {
-                    q: data.data.result,
-                    from: 'en',
-                    to: 'zh',
-                },
-            });
-            this.imageDesc = desc; //data.data.result;
-            this.loading = false;
+                const desc = await axios.get('/api/v1/trans/text', {
+                    params: {
+                        q: data.data.result,
+                        from: 'en',
+                        to: 'zh',
+                    },
+                });
+                this.imageDesc = desc.data.result[0].dst; //data.data.result;
+            } catch (e) {
+                this.imageDesc = '识别失败，请重试';
+                return;
+            } finally {
+                this.loading = false;
+            }
+        }
+    },
+    mounted() {
+        const file = cache.get('file');
+        if (file) {
+            this.analysisFile(file);
         }
     }
 }
@@ -111,7 +142,7 @@ export default {
             font-family: PingFang SC;
             font-size: 48px;
             font-weight: 400;
-            line-height: 48px;
+            line-height: 60px;
             text-align: left;
             border-radius: 10px 50px 50px 50px;
         }
@@ -132,4 +163,14 @@ export default {
             transform: scale(1); /* 结束状态，回到初始放大比例 */  
         }  
     } 
+
+    .camera {
+        margin: 40px;
+        img {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+        }
+    }
 </style>
