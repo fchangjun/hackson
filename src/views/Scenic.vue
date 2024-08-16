@@ -8,6 +8,7 @@
     <div class="content">
       <div v-for="(item,index) in images" :key="item" class="item"
          :style="[1,4,7].includes(index) ? { transform: 'translateY(80px)' } : {}"
+         @click="goMap"
       >
         <img :src="item" alt="" srcset="" />
       </div>
@@ -32,6 +33,11 @@ export default {
         require("@/assets/scenic9.png"),
       ],
     };
+  },
+  methods: {
+    goMap() {
+      this.$router.push("/map?type=gugong");
+    },
   },
 };
 </script>
