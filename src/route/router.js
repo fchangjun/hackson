@@ -6,6 +6,7 @@ import Contact from '../views/Contact.vue';
 import Scenic from '@/views/Scenic.vue';
 import Map from '@/views/Map.vue';
 import Role from '@/views/Role.vue';
+import ScenicSpot from '@/views/ScenicSpot.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -14,6 +15,7 @@ const routes = [
   { path: '/scenic', name: 'Scenic', component: Scenic },
   { path: '/map', name: 'Map', component: Map },
   { path: '/Role', name: 'Role', component: Role },
+  { path: '/scenic-spot', name: 'ScenicSpot', component: ScenicSpot },
   
 ];
 
