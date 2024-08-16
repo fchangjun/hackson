@@ -6,20 +6,10 @@
       <div class="left">Scenic Selection</div>
     </div>
     <div class="content">
-      <img src="@/assets/home1.png" alt="" srcset="" />
-    </div>
-    <div class="bottom">
-      <div>
-        <img src="@/assets/home2.png" alt="" srcset="" />
-      </div>
-      <div>
-        <img src="@/assets/home3.png" alt="" srcset="" />
-      </div>
-      <div>
-        <img src="@/assets/home4.png" alt="" srcset="" />
-      </div>
-      <div>
-        <img src="@/assets/home5.png" alt="" srcset="" />
+      <div v-for="(item,index) in images" :key="item" class="item"
+         :style="[1,4,7].includes(index) ? { transform: 'translateY(80px)' } : {}"
+      >
+        <img :src="item" alt="" srcset="" />
       </div>
     </div>
   </div>
@@ -28,6 +18,21 @@
 <script>
 export default {
   name: "HomePage",
+  data() {
+    return {
+      images: [
+        require("@/assets/scenic1.png"),
+        require("@/assets/scenic2.png"),
+        require("@/assets/scenic3.png"),
+        require("@/assets/scenic4.png"),
+        require("@/assets/scenic7.png"),
+        require("@/assets/scenic6.png"),
+        require("@/assets/scenic5.png"),
+        require("@/assets/scenic8.png"),
+        require("@/assets/scenic9.png"),
+      ],
+    };
+  },
 };
 </script>
 
@@ -39,6 +44,7 @@ export default {
   display: flex;
   align-items: center;
   flex-direction: column;
+  padding-bottom: 100px;
   .title {
     color: #fff;
     padding: 0px 37px;
@@ -54,36 +60,21 @@ export default {
       line-height: 70px;
       text-align: left;
     }
-    .right {
-      font-family: PingFang SC;
-      font-size: 54px;
-      font-weight: 600;
-      line-height: 70px;
-      text-align: left;
-    }
   }
   .content {
-    width: 1169px;
-    height: 775 px;
-    img {
-      width: 100%;
-      height: 100%;
-    }
-  }
-  .bottom {
-    width: 1169px;
+    width: 1540px;
+    min-height: 100vh ;
     display: flex;
-    justify-content: space-between;
     flex-wrap: wrap;
-
-    div {
-      width: 562px;
-      height: 775 px;
-      margin-top: 45px;
+    .item {
+      width: 510px;
+      height: 900px;
+      padding: 15px;
       img {
         width: 100%;
         height: 100%;
       }
+
     }
   }
 }
