@@ -292,7 +292,6 @@ export default {
     setTimeout(() => {
       this.addText("");
     }, 2000);
-    cache.set("file", 1313);
   },
 };
 </script>

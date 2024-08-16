@@ -4,7 +4,7 @@
             <WebCamUI v-if="false" ref="webcam" :fullscreenState="false"  @photoTaken="photoTaken" />
             <input style="display: none;" ref="inputFile" type="file" @change="onFileChange">
             <div class="camera" @click="onCameraClick">
-                <img src="@/assets/拍照icon.png" alt="" srcset="">
+                <img src="@/assets/file-icon.png" alt="" srcset="">
             </div>
         </div>
         <div class="scenic-spot_chat-container">
@@ -23,7 +23,6 @@
 import cache from '@/util/cache';
 import axios from 'axios';
 import { WebCamUI } from 'vue-camera-lib';
-import cache from '@/util/cache';
 const file2Base64 = (file) => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -54,8 +53,6 @@ export default {
             if(this.loading) {
                 return;
             }
-            this.loading = true;
-            this.imageDesc = '正在识别，请稍等...';
             const file = e.target?.files[0];
             if(!file) {
                 return;
@@ -64,6 +61,8 @@ export default {
         },
 
         async analysisFile(file) {
+            this.loading = true;
+            this.imageDesc = '正在识别，请稍等...';
             let base64String = await file2Base64(file);
             if (base64String.indexOf('base64,') > -1) {
                 base64String = base64String.split(',')[1];
@@ -96,10 +95,6 @@ export default {
             this.analysisFile(file);
         }
     },
-    mounted() {
-      console.log(3333)
-      console.log(cache.get('file'))
-    }
 }
 </script>
 <style lang="less">
@@ -141,7 +136,7 @@ export default {
 
         &_chat-block {
             padding: 30px 20px;
-            background: rgba(255, 255, 255, 0.35);
+            background: rgba(0, 0, 0, 0.45);
             color: #fff;
             font-family: PingFang SC;
             font-size: 48px;
