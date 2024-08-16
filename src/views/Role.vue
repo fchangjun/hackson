@@ -2,15 +2,18 @@
 
 <template>
   <div class="role">
-    <audio ref="audioPlayer" controls style="opacity: 0;"></audio>
-
-    <img
-      :src="recordImage"
-      alt="Record"
+    <img class="phone" src="@/assets/file-icon.png" alt="" @click="getFIle" />
+    <input type="file" id="file-input" accept="image/*" @change="chooseFile" v-show="false"/>
+    <audio ref="audioPlayer" controls style="opacity: 0"></audio>
+    <div
+      class="box"
       @touchstart="startLongPress"
       @touchend="stopLongPress"
       @touchcancel="stopLongPress"
       @contextmenu.prevent="disableContextMenu"
+    ></div>
+    <img
+      :src="recordImage"
       :class="{ 'record-button': true, recording: isRecording }"
     />
     <div class="text-container">
@@ -27,6 +30,7 @@
 <script>
 import axios from "axios";
 import JSZip from "jszip";
+import cache from "@/util/cache";
 export default {
   data() {
     return {
@@ -37,8 +41,8 @@ export default {
       typingSpeed: 50, // 每字符的打字速度（毫秒）
       isTyping: false, // 是否正在打字
       transcription: null,
-      txt:'你是谁',
-      result:'',
+      txt: "你是谁",
+      result: "",
     };
   },
   methods: {
@@ -90,7 +94,8 @@ export default {
       this.recognition.onend = () => {
         this.isRecording = false;
         // this.fetchAndPlayAudio(this.transcription);
-        this.sendLLM('你是谁')
+        console.log("语音", this.transcription);
+        this.sendLLM(this.transcription);
       };
 
       this.recognition.start();
@@ -105,13 +110,13 @@ export default {
       event.preventDefault();
     },
     addText(text) {
-      console.log('addText',text,this.isTyping)
+      console.log("addText", text, this.isTyping);
       if (this.isTyping) return; // 如果正在打字，则不允许再添加文本
 
       const newText = text; // 模拟新增的文本内容
       this.fullText += `\n${newText}`; // 将新文本添加到完整文本中
       this.displayedLines.push(""); // 为新行添加一个空行
-      this.displayedLines.push(text); 
+      this.displayedLines.push(text);
       this.typeText(this.displayedLines.length - 1); // 对新行进行逐字显示
     },
     typeText(lineIndex) {
@@ -151,7 +156,8 @@ export default {
         messages: [
           {
             role: "system",
-            content: "你是秦始皇,多年后游客来到了你的宫殿，你要像游客介绍宫殿的历史故事，要求以你的视角，包含感情,回答尽量简短",
+            content:
+              "你是秦始皇,多年后游客来到了你的宫殿，你要像游客介绍宫殿的历史故事，要求以你的视角，包含感情,回答尽量简短",
           },
           {
             role: "user",
@@ -173,34 +179,43 @@ export default {
       //   });
       axios
         .post("/llm/api/chat", data, {
-          responseType: 'text' 
+          responseType: "text",
         })
         .then((response) => {
-          const lines = response.data.split('\n');
-         this.result = ""
-        lines.forEach((line) => {
-          if (line.trim()) {
-            try {
-              const parsedLine = JSON.parse(line);
-              // console.log(parsedLine);
-              // this.fetchAndPlayAudio(parsedLine.message.content)
-              const { done, message,done_reason } = parsedLine;
-              this.result += message.content
-              if(done && done_reason === 'stop') {
-                this.fetchAndPlayAudio(this.result)
-              } 
-            } catch (error) {
-              console.error('Error parsing line:', error);
+          const lines = response.data.split("\n");
+          this.result = "";
+          lines.forEach((line) => {
+            if (line.trim()) {
+              try {
+                const parsedLine = JSON.parse(line);
+                // console.log(parsedLine);
+                // this.fetchAndPlayAudio(parsedLine.message.content)
+                const { done, message, done_reason } = parsedLine;
+                this.result += message.content;
+                if (done && done_reason === "stop") {
+                  this.fetchAndPlayAudio(this.result);
+                }
+              } catch (error) {
+                console.error("Error parsing line:", error);
+              }
             }
-          }
-        });
+          });
         })
         .catch((error) => {
           console.error("Error:", error);
         });
     },
+    getFIle() {
+      const fileInput = document.getElementById('file-input');
+      fileInput.click();
+    },
+    chooseFile(event) {
+      const file = event.target.files[0];
+      cache.set('file', file);
+      this.$router.push({ path: '/scenic-spot' });
+    },
 
-  async fetchAndPlayAudio(msg) {
+    async fetchAndPlayAudio(msg) {
       try {
         const requestData = {
           // 根据接口需求构造请求数据
@@ -264,7 +279,7 @@ export default {
           const audioUrl = URL.createObjectURL(audioBlob);
           this.$refs.audioPlayer.src = audioUrl;
           this.$refs.audioPlayer.play();
-          this.addText(msg)
+          this.addText(msg);
         } else {
           console.error("解压后的文件夹为空！");
         }
@@ -275,13 +290,19 @@ export default {
   },
   mounted() {
     setTimeout(() => {
-      this.addText("")
-    },2000)
-  }
+      this.addText("");
+    }, 2000);
+    cache.set("file", 1313);
+  },
 };
 </script>
 
 <style scoped lang="less">
+.phone {
+  width: 150px;
+  height: 150px;
+  margin: 30px 0px 0px 30px;
+}
 .role {
   width: 100%;
   min-height: 100vh;
@@ -295,7 +316,17 @@ export default {
   align-items: center;
   height: 100vh;
 }
-
+.box {
+  width: 300px;
+  height: 300px;
+  border-radius: 40%;
+  position: absolute;
+  left: 45%;
+  top: 60%;
+  background: rgba(255, 255, 255, 0);
+  z-index: 999;
+  border: 1px solid red;
+}
 .record-button {
   width: 100px;
   height: 100px;
@@ -355,7 +386,7 @@ export default {
   margin: 0;
 }
 .text-container {
-  border:1px solid rgba(255, 255, 255, 0.01) ;
+  border: 1px solid rgba(255, 255, 255, 0.01);
   position: absolute;
   bottom: 0;
   width: 100%;
@@ -363,10 +394,9 @@ export default {
   overflow-y: auto; /* 自动显示滚动条 */
   padding: 100px;
   background-color: rgba(255, 255, 255, 0.01);
-  color:#fff;
+  color: #fff;
   font-size: 58px;
-  border-radius:15px ;
-
+  border-radius: 15px;
 }
 
 .text-display {

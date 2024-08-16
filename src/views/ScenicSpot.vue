@@ -23,7 +23,7 @@
 import cache from '@/util/cache';
 import axios from 'axios';
 import { WebCamUI } from 'vue-camera-lib';
-
+import cache from '@/util/cache';
 const file2Base64 = (file) => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -95,6 +95,10 @@ export default {
         if (file) {
             this.analysisFile(file);
         }
+    },
+    mounted() {
+      console.log(3333)
+      console.log(cache.get('file'))
     }
 }
 </script>
