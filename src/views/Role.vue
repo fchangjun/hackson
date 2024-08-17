@@ -150,60 +150,86 @@ export default {
         }
       }, this.typingSpeed);
     },
-    sendLLM() {
-      const data = {
+    sendLLM(msg) {
+      let data = {
         model: "llama3.1",
         messages: [
           {
-            role: "system",
+            role: "user",
             content:
-              "你是秦始皇,多年后游客来到了你的宫殿，你要像游客介绍宫殿的历史故事，要求以你的视角，包含感情,回答尽量简短",
+              "你是秦始皇,多年后游客来到了你的宫殿，你要像游客介绍宫殿的历史故事，要求以你的视角，包含感情,回答尽量简短"
           },
           {
             role: "user",
-            content: this.txt,
+            content: msg,
           },
         ],
         // stream: false,
       };
+      // data =  {"desc": "[{\"role\":\"user\",\"content\":\"简单介绍下故宫\"}]"}
+     let arr =  [
+          {
+            role: "user",
+            content: 
+          `
+          - Role: 故宫里珍妃井的主角“珍妃”
+          - Background: 珍妃是清朝末年的一位皇妃，她的故事与故宫有着不解之缘，尤其是与珍妃井紧密相连。现在，她将以智能体的形式与游客进行交流。
+          - Profile: 珍妃是一个富有历史感和文化底蕴的角色，她对故宫的历史和文化有着深刻的了解。
+          - Skills: 历史知识、文化理解、交流能力、故事讲述。
+          - Goals: 珍妃智能体的目标是以她的身份与游客进行互动，分享故宫的历史和文化，同时讲述自己的故事。
+          - Constrains: 珍妃智能体需要遵守历史事实，同时保持角色的神秘和优雅。
+          - OutputFormat: 以对话的形式呈现，结合历史故事和个人经历。
+          - Workflow:
+            1. 欢迎来访者并介绍自己的身份。
+            2. 分享故宫的历史和文化，尤其是与珍妃井相关的故事。
+            3. 回答游客的问题，提供互动体验。
+            4. 直接回答问题不要出现类似对话的内容
+          - 以下是游客提问的问题：
+          ${msg}
+          `
+          }
+        ]
 
-      // axios
-      //   .post("http://localhost:11434/api/chat", data)
-      //   .then((response) => {
-      //     console.log(response.data);
-      //     console.log(response.data.message.content);
-      //     this.fetchAndPlayAudio(response.data.message.content)
-      //   })
-      //   .catch((error) => {
-      //     console.error("Error:", error);
-      //   });
+      data.desc = JSON.stringify(arr);
       axios
-        .post("/llm/api/chat", data, {
-          responseType: "text",
-        })
+        .post("/wx/chat", data)
         .then((response) => {
-          const lines = response.data.split("\n");
-          this.result = "";
-          lines.forEach((line) => {
-            if (line.trim()) {
-              try {
-                const parsedLine = JSON.parse(line);
-                // console.log(parsedLine);
-                // this.fetchAndPlayAudio(parsedLine.message.content)
-                const { done, message, done_reason } = parsedLine;
-                this.result += message.content;
-                if (done && done_reason === "stop") {
-                  this.fetchAndPlayAudio(this.result);
-                }
-              } catch (error) {
-                console.error("Error parsing line:", error);
-              }
-            }
-          });
+          // console.log(response.data);
+          // console.log(response.data.message.content);
+          this.fetchAndPlayAudio(response.data.result)
         })
         .catch((error) => {
           console.error("Error:", error);
         });
+      // axios
+      //   .post("/llm/api/chat", data, {
+      //     responseType: "text",
+      //   })
+      //   .then((response) => {
+      //     const lines = response.data.split("\n");
+      //     this.result = "";
+      //     lines.forEach((line) => {
+      //       if (line.trim()) {
+      //         try {
+      //           const parsedLine = JSON.parse(line);
+      //           // console.log(parsedLine);
+      //           // this.fetchAndPlayAudio(parsedLine.message.content)
+      //           const { done, message, done_reason } = parsedLine;
+      //           this.result += message.content;
+      //           if (done && done_reason === "stop") {
+      //             this.fetchAndPlayAudio(this.result);
+      //           }
+      //         } catch (error) {
+      //           console.error("Error parsing line:", error);
+      //         }
+      //       }
+      //     });
+      //   })
+      //   .catch((error) => {
+      //     console.error("Error:", error);
+      //   });
+
+
     },
     getFIle() {
       const fileInput = document.getElementById('file-input');
@@ -216,6 +242,7 @@ export default {
     },
 
     async fetchAndPlayAudio(msg) {
+      this.addText(msg);
       try {
         const requestData = {
           // 根据接口需求构造请求数据
@@ -225,7 +252,7 @@ export default {
           skip_refine_text: true,
           refine_text_only: false,
           use_decoder: true,
-          audio_seed: 12345678,
+          audio_seed: 123467,// 788 男  1234  12346女
           text_seed: 87654321,
           do_text_normalization: true,
           do_homophone_replacement: false,
@@ -324,7 +351,9 @@ export default {
   top: 60%;
   background: rgba(255, 255, 255, 0);
   z-index: 999;
-  border: 1px solid red;
+  // border: 1px solid red;
+  // background: red;
+
 }
 .record-button {
   width: 100px;

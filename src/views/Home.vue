@@ -9,7 +9,7 @@
       <img src="@/assets/home1.png" alt="" srcset="" />
     </div>
     <div class="bottom">
-      <div>
+      <div @click="jump">
         <img src="@/assets/home2.png" alt="" srcset="" />
       </div>
       <div>
@@ -28,6 +28,11 @@
 <script>
 export default {
   name: "HomePage",
+  methods: {
+    jump() {
+      this.$router.push('/scenic')
+    }
+  }
 };
 </script>
 

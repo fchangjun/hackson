@@ -16,7 +16,8 @@ module.exports = {
         logLevel: 'debug' // 用于调试代理时的日志输出
       },
       '/video': {
-        target: 'http://172.26.64.107:8000', // 目标服务器地址
+        // target: 'http://172.26.64.107:8000', // 目标服务器地址
+        target: 'http://127.0.0.1:8000', // 目标服务器地址
         changeOrigin: true, // 是否改变源
         pathRewrite: { '^/video': '' }, // 重写路径，将 /api 替换为空字符串
         ws: true, // 是否支持 WebSocket
@@ -32,7 +33,14 @@ module.exports = {
       '/api': {
         target: 'https://design-test.now.baidu-int.com',
         changeOrigin: true, // 是否改变源
-      }
+      },
+      '/wx': {
+        target: 'http://10.45.30.5:8333',
+        changeOrigin: true, // 是否改变源
+        pathRewrite: { '^/wx': '' }, // 重写路径，将 /api 替换为空字符串
+      },
+
+     
     }
   }
 };
