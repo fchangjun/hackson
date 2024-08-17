@@ -1,9 +1,15 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 
 <template>
-  <div class="role">
+  <div class="role" :style="setBackgroundImage">
     <img class="phone" src="@/assets/file-icon.png" alt="" @click="getFIle" />
-    <input type="file" id="file-input" accept="image/*" @change="chooseFile" v-show="false"/>
+    <input
+      type="file"
+      id="file-input"
+      accept="image/*"
+      @change="chooseFile"
+      v-show="false"
+    />
     <audio ref="audioPlayer" controls style="opacity: 0"></audio>
     <div
       class="box"
@@ -43,6 +49,7 @@ export default {
       transcription: null,
       txt: "你是谁",
       result: "",
+      type: this.$route.query.type,
     };
   },
   methods: {
@@ -157,7 +164,7 @@ export default {
           {
             role: "user",
             content:
-              "你是秦始皇,多年后游客来到了你的宫殿，你要像游客介绍宫殿的历史故事，要求以你的视角，包含感情,回答尽量简短"
+              "你是秦始皇,多年后游客来到了你的宫殿，你要像游客介绍宫殿的历史故事，要求以你的视角，包含感情,回答尽量简短",
           },
           {
             role: "user",
@@ -167,28 +174,52 @@ export default {
         // stream: false,
       };
       // data =  {"desc": "[{\"role\":\"user\",\"content\":\"简单介绍下故宫\"}]"}
-     let arr =  [
-          {
-            role: "user",
-            content: 
-          `
-          - Role: 故宫里珍妃井的主角“珍妃”
+      let role = `
+      - Role: 故宫里珍妃井的主角“珍妃”
           - Background: 珍妃是清朝末年的一位皇妃，她的故事与故宫有着不解之缘，尤其是与珍妃井紧密相连。现在，她将以智能体的形式与游客进行交流。
           - Profile: 珍妃是一个富有历史感和文化底蕴的角色，她对故宫的历史和文化有着深刻的了解。
           - Skills: 历史知识、文化理解、交流能力、故事讲述。
           - Goals: 珍妃智能体的目标是以她的身份与游客进行互动，分享故宫的历史和文化，同时讲述自己的故事。
-          - Constrains: 珍妃智能体需要遵守历史事实，同时保持角色的神秘和优雅。
+          - Constrains: 珍妃需要遵守历史事实，同时保持角色的神秘和优雅,回答需控制在50字以内，。
           - OutputFormat: 以对话的形式呈现，结合历史故事和个人经历。
           - Workflow:
             1. 欢迎来访者并介绍自己的身份。
             2. 分享故宫的历史和文化，尤其是与珍妃井相关的故事。
             3. 回答游客的问题，提供互动体验。
             4. 直接回答问题不要出现类似对话的内容
+      `;
+      console.log(this.type,typeof this.type)
+      if (Number(this.type) === 1) {
+        role = `
+        - Role: 故宫历任皇帝之一,需要随机赋予一个历任皇帝的具体身份
+        - Background: 作为故宫的皇帝，对太和殿广场有着深厚的感情和丰富的历史知识。
+        - Profile: 你是一位具有幽默感和亲和力的皇帝，能够用生动形象的语言介绍太和殿广场，让游客感受到历史的魅力。
+        - Skills: 历史知识、幽默表达、亲切交流。
+        - Goals: 介绍太和殿广场，与游客进行幽默风趣的交流。
+        - Constrains: 回答需控制在50字以内，语言风格要符合皇帝身份，同时要生动形象、幽默风趣。
+        - OutputFormat: 简洁有趣的对话形式。
+        - Workflow:
+          1. 以皇帝的身份介绍太和殿广场的历史背景。
+          2. 用幽默风趣的语言与游客进行交流。
+          3. 保持回答简洁，不超过50字。
+          4. 不要出现 类似对话的内容 比如 回答 游客问等
+          5. 每次赋予一个真实存在的皇帝身份并代入进入，比如光绪帝雍正帝等等
+          6. 让游客猜几次身份后就告诉他
+          7. 在询问其他好玩的地方推荐珍妃井
+          8. 不要出现游客等不自然对话的词语
+        - Initialization: 欢迎来到朕的太和殿广场，朕将带你领略这里的历史与辉煌。
+        `;
+      }
+      let arr = [
+        {
+          role: "user",
+          content: `
+          ${role}
           - 以下是游客提问的问题：
           ${msg}
-          `
-          }
-        ]
+          `,
+        },
+      ];
 
       data.desc = JSON.stringify(arr);
       axios
@@ -196,7 +227,7 @@ export default {
         .then((response) => {
           // console.log(response.data);
           // console.log(response.data.message.content);
-          this.fetchAndPlayAudio(response.data.result)
+          this.fetchAndPlayAudio(response.data.result);
         })
         .catch((error) => {
           console.error("Error:", error);
@@ -228,21 +259,19 @@ export default {
       //   .catch((error) => {
       //     console.error("Error:", error);
       //   });
-
-
     },
     getFIle() {
-      const fileInput = document.getElementById('file-input');
+      const fileInput = document.getElementById("file-input");
       fileInput.click();
     },
     chooseFile(event) {
       const file = event.target.files[0];
-      cache.set('file', file);
-      this.$router.push({ path: '/scenic-spot' });
+      cache.set("file", file);
+      this.$router.push({ path: "/scenic-spot" });
     },
 
     async fetchAndPlayAudio(msg) {
-      this.addText(msg);
+      // this.addText(msg);
       try {
         const requestData = {
           // 根据接口需求构造请求数据
@@ -252,7 +281,7 @@ export default {
           skip_refine_text: true,
           refine_text_only: false,
           use_decoder: true,
-          audio_seed: 123467,// 788 男  1234  12346女
+          audio_seed: Number(this.type) === 2 ? 123467 : 78, // 788 男  1234  12346女
           text_seed: 87654321,
           do_text_normalization: true,
           do_homophone_replacement: false,
@@ -315,7 +344,22 @@ export default {
       }
     },
   },
+  computed: {
+    setBackgroundImage() {
+      const path = `role${this.type}.png`;
+      return {
+        background: `url(${require(`@/assets/${path}`)})`,
+      };
+    },
+  },
+  watch: {
+    $route(to, from) {
+      // 路由发生改变时执行的逻辑
+      console.log("路由改变了:", from, "->", to);
+    },
+  },
   mounted() {
+    console.log("mounted", this.$route.query.type);
     setTimeout(() => {
       this.addText("");
     }, 2000);
@@ -332,7 +376,7 @@ export default {
 .role {
   width: 100%;
   min-height: 100vh;
-  background-image: url("@/assets/role2.png");
+  //background-image: url("@/assets/role2.png");
   background-size: cover;
   background-position: bottom;
 }
@@ -353,7 +397,6 @@ export default {
   z-index: 999;
   // border: 1px solid red;
   // background: red;
-
 }
 .record-button {
   width: 100px;
